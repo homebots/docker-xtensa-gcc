@@ -4,7 +4,7 @@ VFLAG =
 V ?= $(VERBOSE)
 ifeq ("$(V)","1")
 Q :=
-vecho := @true
+vecho := @echo
 VFLAG = -v
 else
 Q := @
@@ -15,40 +15,34 @@ ifndef USER_MAIN
 override USER_MAIN = "call_user_start"
 endif
 
-ifndef INCLUDES
-override INCLUDES = ''
-endif
-
 BUILD_BASE			= project/build
-ESPTOOL					= esptool.py
 FW_BASE					= project/firmware
 TARGET					= esp8266
 
-# which modules (subdirectories) of the project to include in compiling
-MODULES         = project/src
-EXTRA_INCDIR    = project/include $(INCLUDES)
+# which sources of the project to include in compiling
+SOURCE					= project/src
+EXTRA_INCDIR		= $(INCLUDES)
 
 # libraries used in this project, mainly provided by the SDK
 ifndef LIBS
-override LIBS = c gcc hal phy pp net80211 lwip wpa crypto main driver
+# override LIBS 	= c gcc hal phy pp net80211 lwip wpa crypto main driver
+override LIBS 	= main net80211 wpa lwip pp phy c gcc crypto
 endif
 
 # compiler flags using during compilation of source files
 CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
 CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals
 
-# linker flags used to generate the main object file
-# LDFLAGS		?= -nostdlib -Wl,-static -Wl,--no-check-sections -u $(USER_MAIN) -save-temps
-
-# linker script used for the above linkier step
+# linker script
 LD_SCRIPT	= eagle.app.v6.ld
 
 # various paths from the SDK used in this project
-SDK_BASE 			= /home/xtensa-gcc/sdk
+TOOLS_BASE		= /home/xtensa-gcc
+SDK_BASE 			= $(TOOLS_BASE)/sdk
 SDK_LIBDIR		= lib
 SDK_LDDIR			= ld
 SDK_INCDIR		= include include/json include/sdk driver_lib/include/driver
-TOOLS_BASE		= /home/xtensa-gcc
+HB_INCDIR			= $(TOOLS_BASE)/homebots/sdk
 
 # we create two different files for uploading into the flash
 # these are the names and options to generate them
@@ -62,11 +56,12 @@ AR		:= xtensa-lx106-elf-ar
 LD		:= xtensa-lx106-elf-gcc
 
 #### no user configurable options below here
-SRC_DIR			:= $(MODULES)
-BUILD_DIR		:= $(addprefix $(BUILD_BASE)/,$(MODULES))
+SRC_DIR			:= $(SOURCE)
+BUILD_DIR		:= $(addprefix $(BUILD_BASE)/,$(SOURCE))
 
 SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
+HB_INCDIR		:= $(addprefix -I,$(HB_INCDIR))
 
 C_SRC				:= $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.c))
 CXX_SRC			:= $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
@@ -76,7 +71,7 @@ CXX_OBJ			:= $(patsubst %.cpp,$(BUILD_BASE)/%.o,$(CXX_SRC))
 
 OBJ					:= $(C_OBJ) $(CXX_OBJ)
 LIBS				:= $(addprefix -l,$(LIBS))
-APP_AR			:= $(addprefix $(BUILD_BASE)/,$(TARGET)_app.a)
+APP_AR			:= $(addprefix $(BUILD_BASE)/,$(TARGET).a)
 TARGET_OUT	:= $(addprefix $(BUILD_BASE)/,$(TARGET).out)
 
 LD_SCRIPT		:= $(addprefix -T$(SDK_BASE)/$(SDK_LDDIR)/,$(LD_SCRIPT))
@@ -94,10 +89,10 @@ vpath %.cpp $(SRC_DIR)
 define compile-objects
 $1/%.o: %.c
 	$(vecho) "CC $$<"
-	$(Q) $(CC) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CFLAGS) -c $$< -o $$@
+	$(Q) $(CC) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(HB_INCDIR) $(CFLAGS) -c $$< -o $$@
 $1/%.o: %.cpp
 	$(vecho) "CXX $$<"
-	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CXXFLAGS) -c $$< -o $$@
+	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(HB_INCDIR) $(CXXFLAGS) -c $$< -o $$@
 endef
 
 build: clean checkdirs copy-init $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
@@ -107,11 +102,10 @@ copy-init:
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
-	$(Q) $(ESPTOOL) elf2image -o $(FW_BASE)/ $(TARGET_OUT)
+	$(Q) esptool.py elf2image -o $(FW_BASE)/ $(TARGET_OUT)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
-# $(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -L$(SDK_LIBDIR) -Wl,--no-check-sections -Wl,--gc-sections -u $(USER_MAIN) -Wl,-static -Wl,--start-group -lc -lgcc -lhal -lphy -lpp -lnet80211 -llwip -lwpa -lcrypto -lmain -ldriver $(APP_AR) -Wl,--end-group
 	$(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -L$(SDK_LIBDIR) -nostdlib -Wl,--start-group -lmain -lnet80211 -lwpa -llwip -lpp -lphy -Wl,--end-group -lc -lgcc -lcrypto $(APP_AR)
 
 $(APP_AR): $(OBJ)
