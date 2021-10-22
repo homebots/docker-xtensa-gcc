@@ -2,5 +2,5 @@
 
 void ICACHE_FLASH_ATTR setup()
 {
-  os_printf("OK")
+  os_printf("OK");
 }

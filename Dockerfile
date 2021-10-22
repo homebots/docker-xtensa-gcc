@@ -1,4 +1,4 @@
-FROM homebotz/crosstool-ng:latest
+FROM homebotz/debian-dev:latest
 
 RUN apt update && \
   apt remove -y python python-dev pip && \
@@ -8,13 +8,18 @@ RUN apt update && \
   python-is-python3 && \
   pip3 install pyserial
 
-RUN git clone --depth 1 https://github.com/homebots/esptool.git /home/xtensa-gcc/esptool
-RUN git clone -b release/v3.0.5 --depth 1 https://github.com/espressif/ESP8266_NONOS_SDK.git /home/xtensa-gcc/sdk
-RUN git clone -b xtensa-gcc --depth 1 https://github.com/homebots/homebots-sdk.git /home/xtensa-gcc/homebots
+RUN git clone --depth 1 https://github.com/homebots/esptool.git /home/esptool
+RUN git clone --depth 1 https://github.com/espressif/ESP8266_NONOS_SDK.git /home/sdk
+RUN git clone -b xtensa-gcc --depth 1 https://github.com/homebots/homebots-sdk.git /home/homebots-sdk
 
-ADD init/esp_init_data_default.bin /home/xtensa-gcc/
-ADD Makefile /home
 WORKDIR /home
-USER debian
+RUN wget https://dl.espressif.com/dl/xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz && \
+  tar -zxvf xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz && \
+  rm xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz
 
-ENV PATH=/home/xtensa-gcc/esptool:$PATH
+# RUN cp /home/sdk/lib/* /home/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/lib/
+ADD Makefile /home
+
+ENV PATH=/home/xtensa-lx106-elf/bin:/home/esptool:$PATH
+
+USER debian

@@ -17,4 +17,6 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
-      - run: docker run --rm -v $GITHUB_WORKSPACE:/home/project homebotz/xtensa-gcc make
+      - run: |
+          mkdir -p firmware build
+          docker run --rm -v $GITHUB_WORKSPACE:/home/project homebotz/xtensa-gcc make

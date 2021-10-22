@@ -1,4 +1,4 @@
-.PHONY: build clean disassemble symboldump copy-init
+.PHONY: build clean disassemble symboldump prepare
 
 VFLAG =
 V ?= $(VERBOSE)
@@ -11,10 +11,6 @@ Q := @
 vecho := @echo
 endif
 
-ifndef USER_MAIN
-override USER_MAIN = "call_user_start"
-endif
-
 BUILD_BASE			= project/build
 FW_BASE					= project/firmware
 TARGET					= esp8266
@@ -25,29 +21,23 @@ EXTRA_INCDIR		= $(INCLUDES)
 
 # libraries used in this project, mainly provided by the SDK
 ifndef LIBS
-# override LIBS 	= c gcc hal phy pp net80211 lwip wpa crypto main driver
-override LIBS 	= main net80211 wpa lwip pp phy c gcc crypto
+override LIBS 	= c gcc hal pp phy net80211 lwip wpa crypto ssl main
 endif
 
 # compiler flags using during compilation of source files
 CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
-CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals
+CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -Wl,--no-check-sections -Wl,--gc-sections -Wl,-static
 
 # linker script
-LD_SCRIPT	= eagle.app.v6.ld
+LD_SCRIPT			?= eagle.app.v6.ld
 
 # various paths from the SDK used in this project
-TOOLS_BASE		= /home/xtensa-gcc
+TOOLS_BASE		= /home
 SDK_BASE 			= $(TOOLS_BASE)/sdk
 SDK_LIBDIR		= lib
 SDK_LDDIR			= ld
-SDK_INCDIR		= include include/json include/sdk driver_lib/include/driver
-HB_INCDIR			= $(TOOLS_BASE)/homebots/sdk
-
-# we create two different files for uploading into the flash
-# these are the names and options to generate them
-FW_FILE_1_ADDR	= 0x00000
-FW_FILE_2_ADDR	= 0x10000
+SDK_INCDIR		= include include/json/
+HB_INCDIR			= $(TOOLS_BASE)/homebots-sdk/sdk
 
 # select which tools to use as compiler, librarian and linker
 CC		:= xtensa-lx106-elf-gcc
@@ -70,7 +60,7 @@ C_OBJ				:= $(patsubst %.c,$(BUILD_BASE)/%.o,$(C_SRC))
 CXX_OBJ			:= $(patsubst %.cpp,$(BUILD_BASE)/%.o,$(CXX_SRC))
 
 OBJ					:= $(C_OBJ) $(CXX_OBJ)
-LIBS				:= $(addprefix -l,$(LIBS))
+SDK_LIBS		:= $(addprefix -l,$(LIBS))
 APP_AR			:= $(addprefix $(BUILD_BASE)/,$(TARGET).a)
 TARGET_OUT	:= $(addprefix $(BUILD_BASE)/,$(TARGET).out)
 
@@ -79,9 +69,6 @@ LD_SCRIPT		:= $(addprefix -T$(SDK_BASE)/$(SDK_LDDIR)/,$(LD_SCRIPT))
 INCDIR			:= $(addprefix -I,$(SRC_DIR))
 EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
-
-FW_FILE_1	:= $(addprefix $(FW_BASE)/,$(FW_FILE_1_ADDR).bin)
-FW_FILE_2	:= $(addprefix $(FW_BASE)/,$(FW_FILE_2_ADDR).bin)
 
 vpath %.c $(SRC_DIR)
 vpath %.cpp $(SRC_DIR)
@@ -95,10 +82,10 @@ $1/%.o: %.cpp
 	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(HB_INCDIR) $(CXXFLAGS) -c $$< -o $$@
 endef
 
-build: clean checkdirs copy-init $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+build: clean checkdirs prepare $(TARGET_OUT) $(FW_BASE)/firmware.bin
 
-copy-init:
-	$(Q) cp $(TOOLS_BASE)/esp_init_data_default.bin $(FW_BASE)/0x7c000.bin
+prepare:
+	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default_v08.bin $(FW_BASE)/init_data.bin
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
@@ -106,19 +93,15 @@ $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
-	$(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -L$(SDK_LIBDIR) -nostdlib -Wl,--start-group -lmain -lnet80211 -lwpa -llwip -lpp -lphy -Wl,--end-group -lc -lgcc -lcrypto $(APP_AR)
+# $(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -L$(SDK_LIBDIR) -Wl,--no-check-sections -Wl,--gc-sections -u call_user_start -Wl,-static -Wl,--start-group $(SDK_LIBS) $(APP_AR) -Wl,--end-group
+	$(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -u call_user_start -L$(SDK_LIBDIR) -nostdlib -Wl,--start-group $(SDK_LIBS) $(APP_AR) -Wl,--end-group
 
 $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
 	$(Q) $(AR) cru $(VFLAG) $@ $^
 
-checkdirs: $(BUILD_DIR) $(FW_BASE)
-
-$(BUILD_DIR):
-	$(Q) mkdir -p $@
-
-$(FW_BASE):
-	$(Q) mkdir -p $@
+checkdirs:
+	$(Q) mkdir -p $(BUILD_DIR) $(FW_BASE)
 
 clean:
 	$(Q) rm -rf $(FW_BASE)/** $(BUILD_BASE)/**
