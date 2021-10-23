@@ -40,10 +40,11 @@ SDK_INCDIR		= include include/json/
 HB_INCDIR			= $(TOOLS_BASE)/homebots-sdk/sdk
 
 # select which tools to use as compiler, librarian and linker
-CC		:= xtensa-lx106-elf-gcc
-CXX		:= xtensa-lx106-elf-g++
-AR		:= xtensa-lx106-elf-ar
-LD		:= xtensa-lx106-elf-gcc
+CC			:= xtensa-lx106-elf-gcc
+CXX			:= xtensa-lx106-elf-g++
+AR			:= xtensa-lx106-elf-ar
+LD			:= xtensa-lx106-elf-gcc
+ESPTOOL := /home/esptool/bin/esptool
 
 #### no user configurable options below here
 SRC_DIR			:= $(SOURCE)
@@ -85,11 +86,15 @@ endef
 build: clean checkdirs prepare $(TARGET_OUT) $(FW_BASE)/firmware.bin
 
 prepare:
+	$(vecho) "Preparing project"
 	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default_v08.bin $(FW_BASE)/init_data.bin
+	$(vecho) "Checking $(ESPTOOL)"
+	python --version
+	$(ESPTOOL) version
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
-	$(Q) esptool.py elf2image -o $(FW_BASE)/ $(TARGET_OUT)
+	$(Q) $(ESPTOOL) elf2image -o $(FW_BASE)/ $(TARGET_OUT)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
