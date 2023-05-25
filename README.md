@@ -11,15 +11,18 @@ Contains:
 ### Build your project
 
 ```bash
-docker run --rm -v $PWD:/home/project homebotz/xtensa-gcc make
+docker run --rm -v $PWD:/home/project ghcr.io/homebots/xtensa-gcc make
 ```
 
-The final firmware binaries are in `firmware/`.
+The final firmware binaries are in `firmware/` folder.
 
 ### Flash with esptool.py
 
 There are two files to flash. For esp8266, the following command writes the firmware to flash:
 
 ```bash
+# replace /dev/usb.serialport123 with the serial port of your esp8266 flasher.
+# baud rate might need to change... 115200 works well
+
 esptool.py --after no_reset --baud 230400 --port /dev/usb.serialport123 write_flash --compress --flash_freq 80m -fm qio -fs 1MB 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin
 ```
