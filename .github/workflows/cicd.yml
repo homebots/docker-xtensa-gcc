@@ -12,6 +12,7 @@ jobs:
       registry: ghcr.io
       org: ghcr.io/homebots
       defaultBranch: main
+      imageName: xtensa-gcc
     secrets:
       username: ${{ github.actor }}
       password: ${{ secrets.GITHUB_TOKEN }}
@@ -24,4 +25,5 @@ jobs:
       - run: |
           mkdir -m a+w -p firmware build
           ls -al
-          docker run --rm -u 1000:1000 -v $GITHUB_WORKSPACE:/home/project:rw homebotz/xtensa-gcc:${{github.sha}} make
+          docker run --rm -u 1000:1000 -v $GITHUB_WORKSPACE:/home/project:rw ghcr.io/homebots/xtensa-gcc:${{github.sha}} make
+          ls -al firmware/
