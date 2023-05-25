@@ -1,16 +1,20 @@
 name: CICD
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     uses: homebots/workflows/.github/workflows/docker-build-and-push.yml@master
     with:
-      org: homebotz
-      imageName: xtensa-gcc
+      registry: ghcr.io
+      org: ghcr.io/homebots
+      defaultBranch: main
     secrets:
-      username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
 
   self-test:
     runs-on: ubuntu-latest
