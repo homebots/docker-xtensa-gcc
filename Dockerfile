@@ -1,4 +1,4 @@
-FROM homebotz/debian-dev:latest
+FROM ghcr.io/homebots/debian-dev:latest
 
 RUN apt update && \
   apt remove -y python python-dev pip && \
@@ -6,9 +6,9 @@ RUN apt update && \
   apt install -y python3 \
   python3-pip \
   python-is-python3 && \
-  pip3 install pyserial && \
-  python --version && \
-  python -c 'import serial'
+  pip3 install pyserial
+
+RUN python --version && python -c 'import serial'
 
 RUN git clone --depth 1 https://github.com/homebots/esptool.git /home/esptool
 RUN git clone --depth 1 https://github.com/espressif/ESP8266_NONOS_SDK.git /home/sdk
