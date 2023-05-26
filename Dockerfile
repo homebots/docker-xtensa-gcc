@@ -15,14 +15,16 @@ RUN git clone --depth 1 https://github.com/espressif/ESP8266_NONOS_SDK.git /home
 RUN git clone -b xtensa-gcc --depth 1 https://github.com/homebots/homebots-sdk.git /home/homebots-sdk
 
 WORKDIR /home
-RUN wget -q https://dl.espressif.com/dl/xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz && \
-  tar -zxvf xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz && \
-  rm xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz
+COPY ./xtensa-lx106-elf.tgz .
+RUN tar -zxvf xtensa-lx106-elf.tgz && rm xtensa-lx106-elf.tgz
 
 ADD Makefile /home
 RUN mkdir -p /home/esptool/bin && \
   echo 'python3 /home/esptool/esptool.py $@' >> /home/esptool/bin/esptool && \
   chmod +x /home/esptool/bin/esptool && \
   /home/esptool/bin/esptool version
+
+RUN apt install -y libncurses5
+ADD gdbinit /home/.gdbinit
 
 ENV PATH=/home/xtensa-lx106-elf/bin:/home/esptool/bin:$PATH
