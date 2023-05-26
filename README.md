@@ -26,7 +26,3 @@ There are two files to flash. For esp8266, the following command writes the firm
 
 esptool.py --after no_reset --baud 230400 --port /dev/usb.serialport123 write_flash --compress --flash_freq 80m -fm qio -fs 1MB 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin
 ```
-
-## Notice: xtensa ELF binaries
-
-The .tgz file at the root folder was downloaded from https://dl.espressif.com/dl/xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz

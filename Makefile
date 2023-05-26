@@ -44,7 +44,7 @@ CC			:= xtensa-lx106-elf-gcc
 CXX			:= xtensa-lx106-elf-g++
 AR			:= xtensa-lx106-elf-ar
 LD			:= xtensa-lx106-elf-gcc
-ESPTOOL := /home/esptool/bin/esptool
+ESPTOOL := /home/esptool/bin/esptool.sh
 
 #### no user configurable options below here
 SRC_DIR			:= $(SOURCE)
