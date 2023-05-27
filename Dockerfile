@@ -5,7 +5,9 @@ RUN apt update && \
   apt autoremove -y && \
   apt install -y python3 \
   python3-pip \
-  python-is-python3 && \
+  python-is-python3 \
+  gcc-xtensa-lx106 \
+  libncurses5 && \
   pip3 install pyserial
 
 RUN python --version && python -c 'import serial'
@@ -15,19 +17,13 @@ RUN mkdir -p /home/esptool/bin && \
   echo 'python3 /home/esptool/esptool.py $@' >> /home/esptool/bin/esptool.sh && \
   chmod +x /home/esptool/bin/esptool.sh
 RUN python3 --version
-RUN /home/esptool/bin/esptool.sh version
+RUN sh /home/esptool/bin/esptool.sh version
 
 RUN git clone --depth 1 https://github.com/homebots/ESP8266_NONOS_SDK.git /home/sdk
 RUN git clone -b xtensa-gcc --depth 1 https://github.com/homebots/homebots-sdk.git /home/homebots-sdk
-RUN apt-get install -y gcc-xtensa-lx106
+
 WORKDIR /home
-# COPY ./xtensa-lx106-elf.tgz .
-# RUN tar -zxvf xtensa-lx106-elf.tgz && rm xtensa-lx106-elf.tgz
-
 ADD Makefile /home
-
-RUN apt install -y libncurses5
 ADD gdbinit /home/.gdbinit
 
-# ENV PATH=/home/xtensa-lx106-elf/bin:/home/esptool/bin:$PATH
 ENV PATH=/home/esptool/bin:$PATH
