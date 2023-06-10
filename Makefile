@@ -27,7 +27,6 @@ override LIBS 	= c gcc hal pp phy net80211 lwip wpa crypto ssl main
 endif
 
 # compiler flags using during compilation of source files
-# -ffreestanding
 CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH -DWIFI_SSID='"$(WIFI_SSID)\0"' -DWIFI_PASSWORD='"$(WIFI_PASSWORD)\0"'
 CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -Wl,--no-check-sections -Wl,--gc-sections -Wl,-static
 
@@ -99,7 +98,6 @@ $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
-# $(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -L$(SDK_LIBDIR) -Wl,--no-check-sections -Wl,--gc-sections -u call_user_start -Wl,-static -Wl,--start-group $(SDK_LIBS) $(APP_AR) -Wl,--end-group
 	$(Q) $(LD) $(VFLAG) $(LD_SCRIPT) -o $@ -u call_user_start -L$(SDK_LIBDIR) -nostdlib -Wl,--start-group $(SDK_LIBS) $(APP_AR) -Wl,--end-group
 
 $(APP_AR): $(OBJ)
