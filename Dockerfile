@@ -24,7 +24,7 @@ RUN git clone --depth 1 https://github.com/homebots/ESP8266_NONOS_SDK.git /home/
 # RUN cd /home/sdk/lib/tmp && xtensa-lx106-elf-ar x ../libcrypto.a && cd .. && xtensa-lx106-elf-ar rs libwpa.a tmp/*.o
 
 # install Homebots SDK extensions
-RUN git clone --depth 1 https://github.com/homebots/homebots-sdk.git -b 3c46de77c837179624c406d41c5e06e928896dba /home/homebots-sdk
+RUN git clone https://github.com/homebots/homebots-sdk.git /home/homebots-sdk && cd /home/homebots-sdk && git checkout 3c46de77c8
 
 WORKDIR /home
 ADD Makefile /home
