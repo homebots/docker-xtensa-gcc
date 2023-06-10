@@ -30,8 +30,6 @@ RUN wget -O /home/sdk.zip https://github.com/homebots/homebots-sdk/archive/7b2aa
   && rm -r /home/homebots-sdk/homebots-sdk-* \
   && rm /home/sdk.zip
 
-# RUN git clone https://github.com/homebots/homebots-sdk.git /home/homebots-sdk && cd /home/homebots-sdk && git checkout 7b2aa317ef88aad68602935d8752719ccf1a6ca0
-
 WORKDIR /home
 ADD Makefile /home
 ADD gdbinit /home/.gdbinit
