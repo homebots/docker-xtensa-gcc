@@ -5,6 +5,7 @@ Contains:
 - [ESP_NONOS_SDK v3.0.5](https://github.com/espressif/ESP8266_NONOS_SDK)
 - [Xtensa gcc compiler v5.2.0](https://dl.espressif.com/dl/xtensa-lx106-elf-linux64-1.22.0-100-ge567ec7-5.2.0.tar.gz)
 - [esptool.py](github.com/homebots/esptool)
+- [Additional headers for xtensa-gcc](https://github.com/esp8266/esp8266-wiki/blob/master/include.tgz)
 
 ## Usage
 

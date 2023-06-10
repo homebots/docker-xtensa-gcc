@@ -14,10 +14,12 @@ endif
 BUILD_BASE			= project/build
 FW_BASE					= project/firmware
 TARGET					= esp8266
+WIFI_SSID				?= ''
+WIFI_PASSWORD		?= ''
 
 # which sources of the project to include in compiling
 SOURCE					= project/src
-EXTRA_INCDIR		= $(INCLUDES)
+EXTRA_INCDIR		= $(INCLUDES) /home/xtensa-gcc-headers/include
 
 # libraries used in this project, mainly provided by the SDK
 ifndef LIBS
@@ -25,7 +27,8 @@ override LIBS 	= c gcc hal pp phy net80211 lwip wpa crypto ssl main
 endif
 
 # compiler flags using during compilation of source files
-CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH
+# -ffreestanding
+CFLAGS		= $(VFLAG) -Os -s -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -D__ets__ -DICACHE_FLASH -DWIFI_SSID='"$(WIFI_SSID)\0"' -DWIFI_PASSWORD='"$(WIFI_PASSWORD)\0"'
 CXXFLAGS	= $(VFLAG) $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -Wl,--no-check-sections -Wl,--gc-sections -Wl,-static
 
 # linker script
@@ -39,14 +42,12 @@ SDK_LDDIR			= ld
 SDK_INCDIR		= include include/json/
 HB_INCDIR			= $(TOOLS_BASE)/homebots-sdk/sdk
 
-# select which tools to use as compiler, librarian and linker
-CC			:= xtensa-lx106-elf-gcc
-CXX			:= xtensa-lx106-elf-g++
-AR			:= xtensa-lx106-elf-ar
-LD			:= xtensa-lx106-elf-gcc
-ESPTOOL := /home/esptool/bin/esptool.sh
+CC					:= xtensa-lx106-elf-gcc
+CXX					:= xtensa-lx106-elf-g++
+AR					:= xtensa-lx106-elf-ar
+LD					:= xtensa-lx106-elf-gcc
+ESPTOOL			:= /home/esptool/bin/esptool.sh
 
-#### no user configurable options below here
 SRC_DIR			:= $(SOURCE)
 BUILD_DIR		:= $(addprefix $(BUILD_BASE)/,$(SOURCE))
 

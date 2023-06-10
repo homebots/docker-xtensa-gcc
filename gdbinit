@@ -10,5 +10,5 @@ mem 0x40000000 0x400fffff ro cache
 mem 0x40100000 0x4013ffff rw cache
 mem 0x40140000 0x5fffffff ro cache
 mem 0x60000000 0x60001fff rw
-file /target/firmware.out
+file /home/project/build/esp8266.out
 target remote :1234

@@ -13,6 +13,7 @@ jobs:
       org: ghcr.io/homebots
       defaultBranch: main
       imageName: xtensa-gcc
+      platforms: linux/amd64
     secrets:
       username: ${{ github.actor }}
       password: ${{ secrets.GITHUB_TOKEN }}
