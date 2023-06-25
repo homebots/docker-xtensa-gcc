@@ -29,7 +29,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          mkdir -m a+w -p firmware build
+          FW=firmware
+          mkdir -m a+w -p $FW build
           ls -al
           docker run --rm -u 1000:1000 -v $GITHUB_WORKSPACE:/home/project:rw ghcr.io/homebots/xtensa-gcc:${{github.sha}} make
-          ls -al firmware/
+          ls -al $FW
+          [ -f $FW/0x00000.bin ] && [ -f $FW/0x10000.bin ] && [ -f $FW/0x7b000.bin ] && [ -f $FW/0x7c000.bin ] || exit 1
