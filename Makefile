@@ -87,6 +87,9 @@ build: clean checkdirs prepare $(TARGET_OUT)
 
 prepare:
 	$(vecho) "Preparing project"
+	$(vecho) "Adding RF calibration reset at 0x7b000"
+	$(Q) dd bs=1024 count=4 if=/dev/zero of=$(FW_BASE)/0x7b000.bin
+	$(vecho) "Adding PHY flags at 0x7c000"
 	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default_v08.bin $(FW_BASE)/0x7c000.bin
 	$(vecho) "Checking $(ESPTOOL)"
 	python --version
