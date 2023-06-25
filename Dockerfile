@@ -30,6 +30,6 @@ RUN wget -O /home/sdk.zip https://github.com/homebots/homebots-sdk/archive/b42bc
   && rm /home/sdk.zip
 
 WORKDIR /home
-ADD gdbinit /home/.gdbinit
 ADD Makefile /home
+ADD gdbinit /home/.gdbinit
 ENV PATH=/home/esptool/bin:$PATH

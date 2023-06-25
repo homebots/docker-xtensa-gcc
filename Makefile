@@ -83,7 +83,7 @@ $1/%.o: %.cpp
 	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(HB_INCDIR) $(CXXFLAGS) -c $$< -o $$@
 endef
 
-build: clean checkdirs prepare $(TARGET_OUT)
+build: clean checkdirs prepare $(TARGET_OUT) $(FW_BASE)/firmware.bin
 
 prepare:
 	$(vecho) "Preparing project"
