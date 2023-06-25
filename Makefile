@@ -87,7 +87,7 @@ build: clean checkdirs prepare $(TARGET_OUT)
 
 prepare:
 	$(vecho) "Preparing project"
-	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default_v08.bin $(FW_BASE)/0x7b000.bin
+	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default_v08.bin $(FW_BASE)/0x7c000.bin
 	$(vecho) "Checking $(ESPTOOL)"
 	python --version
 	$(ESPTOOL) version
