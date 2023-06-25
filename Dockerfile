@@ -21,7 +21,6 @@ RUN mkdir /home/xtensa-gcc-headers && cd /home/xtensa-gcc-headers && tar xzf ../
 
 # install latest ESP NON-OS SDK
 RUN git clone --depth 1 https://github.com/homebots/ESP8266_NONOS_SDK.git /home/sdk && cd /home/sdk/lib && mkdir -p tmp
-# RUN cd /home/sdk/lib/tmp && xtensa-lx106-elf-ar x ../libcrypto.a && cd .. && xtensa-lx106-elf-ar rs libwpa.a tmp/*.o
 
 # install Homebots SDK extensions
 RUN wget -O /home/sdk.zip https://github.com/homebots/homebots-sdk/archive/b42bc5718a132387e2d146fc18f15115af340924.zip \
@@ -31,6 +30,6 @@ RUN wget -O /home/sdk.zip https://github.com/homebots/homebots-sdk/archive/b42bc
   && rm /home/sdk.zip
 
 WORKDIR /home
-ADD Makefile /home
 ADD gdbinit /home/.gdbinit
+ADD Makefile /home
 ENV PATH=/home/esptool/bin:$PATH
